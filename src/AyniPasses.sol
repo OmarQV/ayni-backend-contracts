@@ -11,7 +11,7 @@ import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol
 contract AyniPasses is ERC721, ERC721URIStorage, Ownable, ReentrancyGuard {
     // Dirección del token MNT en Mantle Sepolia Testnet
     IERC20 public immutable MNT_TOKEN;
-    
+
     // Dirección de la tesorería del proyecto Ayni, que recibe las comisiones
     address public ayniTreasury;
 
@@ -30,14 +30,11 @@ contract AyniPasses is ERC721, ERC721URIStorage, Ownable, ReentrancyGuard {
     event RouteListed(uint256 indexed routeId, address indexed operator, uint256 price);
     event PassPurchased(uint256 indexed routeId, address indexed buyer);
 
-    constructor(address initialOwner, address mntTokenAddress)
-        ERC721("Ayni Pass", "AYNIPASS")
-        Ownable(initialOwner)
-    {
+    constructor(address initialOwner, address mntTokenAddress) ERC721("Ayni Pass", "AYNIPASS") Ownable(initialOwner) {
         MNT_TOKEN = IERC20(mntTokenAddress);
         ayniTreasury = initialOwner;
     }
-    
+
     /// @dev Permite al owner (futura DAO) cambiar la dirección de la tesorería.
     function setAyniTreasury(address _newTreasury) public onlyOwner {
         ayniTreasury = _newTreasury;
@@ -48,7 +45,7 @@ contract AyniPasses is ERC721, ERC721URIStorage, Ownable, ReentrancyGuard {
     /// @param _routeUri La URI de los metadatos de la ruta, subida a Pinata.
     function listRoute(uint256 _priceInMNT, string memory _routeUri) public {
         uint256 tokenId = _nextTokenId++;
-        
+
         routeInfo[tokenId] = Route({
             operator: msg.sender,
             priceInMNT: _priceInMNT,
@@ -56,7 +53,7 @@ contract AyniPasses is ERC721, ERC721URIStorage, Ownable, ReentrancyGuard {
         });
 
         _setTokenURI(tokenId, _routeUri);
-        
+
         emit RouteListed(tokenId, msg.sender, _priceInMNT);
     }
 
@@ -71,7 +68,7 @@ contract AyniPasses is ERC721, ERC721URIStorage, Ownable, ReentrancyGuard {
         uint256 price = route.priceInMNT;
         uint256 operatorAmount = (price * route.operatorFee) / 10000;
         uint256 ayniAmount = price - operatorAmount;
-        
+
         // El comprador debe haber aprobado la transferencia del token MNT
         require(MNT_TOKEN.transferFrom(msg.sender, address(this), price), "Token transfer failed");
 
@@ -86,12 +83,7 @@ contract AyniPasses is ERC721, ERC721URIStorage, Ownable, ReentrancyGuard {
     }
 
     // Las siguientes funciones son overrides requeridos por Solidity.
-    function tokenURI(uint256 tokenId)
-        public
-        view
-        override(ERC721, ERC721URIStorage)
-        returns (string memory)
-    {
+    function tokenURI(uint256 tokenId) public view override(ERC721, ERC721URIStorage) returns (string memory) {
         return super.tokenURI(tokenId);
     }
 
@@ -105,12 +97,7 @@ contract AyniPasses is ERC721, ERC721URIStorage, Ownable, ReentrancyGuard {
         return super._update(to, tokenId, auth);
     }
 
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        override(ERC721, ERC721URIStorage)
-        returns (bool)
-    {
+    function supportsInterface(bytes4 interfaceId) public view override(ERC721, ERC721URIStorage) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 }
